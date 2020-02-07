@@ -29,25 +29,28 @@ print(r.keys())
 
 print(r.smembers(today))
 
-
-
 r1 = redis.Redis()
 r1.set("Name", "Ivan")
 
-print(r1)
-
-if type(r) == type(r1):
-    print(True)
+#print(r1)
+#if type(r) == type(r1):
+#    print(True)
 
 
 birthday = "01011990"
 birthday = "01.01.1990"
-
-
 #print(datetime(birthday))
-
-
 current_date = datetime.datetime.strptime(birthday, '%d.%m.%Y').strftime('%Y%m%d')
 #current_date = datetime.datetime.strftime('%Y%m%d')
+#print(current_date)
 
-print(current_date)
+
+r2 = redis.Redis()
+dictionary = {"k1":"v1", "k2":"v2"}
+
+r2.hmset("py_dict", dictionary)
+
+print(r2.hgetall("py_dict"))
+
+print(dir(r2))
+
