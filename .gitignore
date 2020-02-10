@@ -1,3 +1,4 @@
 .idea/
 store.pyc
 scoring.pyc
+*.pyc

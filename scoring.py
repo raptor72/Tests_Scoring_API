@@ -2,7 +2,7 @@
 
 import hashlib
 import json
-from store import Store # oop
+#from store import Store # oop
 #from store import * # func
 import datetime
 
@@ -23,7 +23,7 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
 #    print(key_parts)
 #    return key
 
-    store = Store({"46a15aeae88d2123e8ac038602ee248f": 34}) # oop
+#    store = Store({"46a15aeae88d2123e8ac038602ee248f": 34}) # oop
     score = store.cache_get(key) or 0 # oop
 #    score = cache_get(key) or 0 # func
 

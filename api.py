@@ -11,6 +11,8 @@ from optparse import OptionParser
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from six import string_types
 import scoring
+from store import Store
+
 
 SALT = "Otus"
 ADMIN_LOGIN = "admin"
@@ -249,7 +251,9 @@ class MainHTTPHandler(BaseHTTPRequestHandler):
     router = {
         "method": method_handler
     }
-    store = None
+
+#    store = None
+    store = Store({"46a15aeae88d2123e8ac038602ee248f": 34})
 
     def get_request_id(self, headers):
         return headers.get('HTTP_X_REQUEST_ID', uuid.uuid4().hex)
