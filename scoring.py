@@ -42,11 +42,14 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
 #    cache_set(key, score, 60 * 60)
     return score
 
-"""
+
 def get_interests(store, cid):
     r = store.get("i:%s" % cid)
-    return json.loads(r) if r else []
-"""
+#    r = store.get("%s" % cid)
+#    return json.loads(r) if r else []
+    return r
+#    return r if r else []
+#    return ["key", "value"]
 
 #get_score(None, "79177002040", "ipetrov@gmail.com", "19900101", 1, "Ivan", "Petrov")
 
