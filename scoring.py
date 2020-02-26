@@ -22,7 +22,7 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
     # fallback to heavy calculation in case of cache miss
 #    print(key_parts)
 #    return key
-
+    print(key) #
 #    store = Store({"46a15aeae88d2123e8ac038602ee248f": 34}) # oop
     score = store.cache_get(key) or 0 # oop
 #    score = cache_get(key) or 0 # func
@@ -44,8 +44,11 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
 
 
 def get_interests(store, cid):
+#    print(cid) # "client_ids": [1, 2] 1, 2, ...
     r = store.get("i:%s" % cid)
 #    r = store.get("%s" % cid)
+    print(r) #1, pets
+    print(type(r)) # int, str
 #    return json.loads(r) if r else []
     return r
 #    return r if r else []

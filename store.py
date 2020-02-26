@@ -31,19 +31,10 @@ class Store:
             raise RuntimeError("Key %s is not set!" % cid.split(":")[1])
         return value
 
-#        print(cid)
-#        return cid
-#        interests = ["cars", "pets", "travel", "hi-tech", "sport", "music", "books", "tv", "cinema", "geek", "otus"]
-#        return random.sample(interests, 2)
-
 
 def get_interests(store, cid):
     interests = ["cars", "pets", "travel", "hi-tech", "sport", "music", "books", "tv", "cinema", "geek", "otus"]
     return str({cid: random.sample(interests, 2)})
-
-#print(get_interests("", ""))
-
-
 
 def get_interests2(store, cid):
     r = """
@@ -60,4 +51,4 @@ def get_interests2(store, cid):
     return json.loads(r) if r else []
 
 
-print(get_interests2("", ""))
+#print(get_interests2("", "")) # {'i': ['cars', 'music']}

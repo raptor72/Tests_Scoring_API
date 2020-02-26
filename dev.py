@@ -51,8 +51,8 @@ r2.hmset("py_dict", dictionary)
 #print(dir(r2))
 
 
-#def get_interests(cid):
-#    print("i:%s" % cid)
+def get_interests(cid):
+    print("i:%s" % cid)
 
-#get_interests("111")
+get_interests("111") # i:111
 

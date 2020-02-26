@@ -1,21 +1,19 @@
-import unittest
-
+import pytest
 import api
+from collections import namedtuple
+
+@pytest.fixture
+def setUp():
+    context = {}
+    headers = {}
+    settings = {}
+    return {"context": context, "headers": headers, "settings": settings}
+
+def get_response(setUp, request):
+    return api.method_handler({"body": request, "headers": setUp["headers"]}, setUp["context"], setUp["settings"])
+
+def test_empty_request(setUp):
+    _, code = get_response(setUp, {})
+    assert api.INVALID_REQUEST == code
 
 
-class TestSuite(unittest.TestCase):
-    def setUp(self):
-        self.context = {}
-        self.headers = {}
-        self.store = None
-
-    def get_response(self, request):
-        return api.method_handler({"body": request, "headers": self.headers}, self.context, self.store)
-
-    def test_empty_request(self):
-        _, code = self.get_response({})
-        self.assertEqual(api.INVALID_REQUEST, code)
-
-
-if __name__ == "__main__":
-    unittest.main()
