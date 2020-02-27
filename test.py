@@ -123,5 +123,21 @@ def test_ok_interests_request(arguments, context, load_store):
     assert context.get("nclients") == len(arguments["client_ids"])
 
 
+@pytest.mark.parametrize("arguments", [
+        {},
+        {"date": "20.07.2017"},
+        {"client_ids": [], "date": "20.07.2017"},
+        {"client_ids": {1: 2}, "date": "20.07.2017"},
+        {"client_ids": ["1", "2"], "date": "20.07.2017"},
+        {"client_ids": [1, 2], "date": "XXX"},
+    ])
+def test_invalid_interests_request(arguments, load_store):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "clients_interests", "arguments": arguments}
+    set_valid_auth(request)
+    response, code = get_response(request, {}, {}, load_store)
+    assert api.INVALID_REQUEST == code
+    assert len(response)>0
+
+
 
 
