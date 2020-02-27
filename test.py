@@ -18,7 +18,17 @@ def set_valid_auth(request):
     return request["token"]
 
 
-def test_ok_score_request(arguments={"phone": "79175002040", "email": "stupnikov@otus.ru"}):
+
+@pytest.mark.parametrize("arguments", [{"phone": "79175002040", "email": "stupnikov@otus.ru"},
+                                       {"gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
+                                       {"gender": 0, "birthday": "01.01.2000"},
+                                       {"gender": 2, "birthday": "01.01.2000"},
+                                       {"first_name": "a", "last_name": "b"},
+                                       {"phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000",
+                         "first_name": "a", "last_name": "b"},
+                                       {"phone": 79175002040, "email": "stupnikov@otus.ru"},
+])
+def test_ok_score_request(arguments):
     context = {}
     request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
     set_valid_auth(request)
