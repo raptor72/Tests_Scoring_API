@@ -25,9 +25,8 @@ def set_valid_auth(request):
         request["token"] = hashlib.sha512(msg).hexdigest()
     return request["token"]
 
-def test_empty_request():
-    s = Store({"46a15aeae88d2123e8ac038602ee248f": 34, "1": 1, "2": "pets"})
-    _, code = get_response({}, {}, {}, None)
+def test_empty_request(load_store):
+    _, code = get_response({}, {}, {}, load_store)
     assert api.INVALID_REQUEST == code
 
 @pytest.mark.parametrize("arguments", [{"phone": "79175002040", "email": "stupnikov@otus.ru"},
@@ -44,7 +43,6 @@ def test_ok_score_request(arguments, load_store, context):
     set_valid_auth(request)
     response, code = get_response(request, {}, context, load_store)
 #    print(api.OK) # 200
-#    print(code) # 200
 #    print(arguments) # {'phone': '79175002040', 'email': 'stupnikov@otus.ru'}
 #    print("response", response) #('response', {'score': 3.0})
 #    print("context", context) # ('context', {'has': ['phone', 'email']})
@@ -121,7 +119,6 @@ def test_ok_interests_request(arguments, context, load_store):
     assert ((isinstance(v, basestring) for i in v) for v in response.values())
 #    print("response.values(): ", response.values()) #('response.values(): ', [1, 'pets', 'heavy metall'])
     assert context.get("nclients") == len(arguments["client_ids"])
-
 
 @pytest.mark.parametrize("arguments", [
         {},
