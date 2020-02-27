@@ -58,7 +58,7 @@ def test_default_namedtuple_fixture(load_lastlog):
 
 def test_lastlog_fields():
     l = Lastlog('2000.01.01 00:00:00', '/root')
-    print(l)
+#    print(l)
     assert l.mtime > '1970.01.01 00:00:00'
     assert l.mtime == '2000.01.01 00:00:00'
     assert l.path == '/root'
@@ -66,7 +66,7 @@ def test_lastlog_fields():
 
 def test_lastlog_fields_fixture(load_lastlog):
     l = load_lastlog('2000.01.01 00:00:00', '/root')
-    print(l)
+#    print(l)
     assert l.mtime > '1970.01.01 00:00:00'
     assert l.mtime == '2000.01.01 00:00:00'
     assert l.path == '/root'
@@ -75,7 +75,7 @@ def test_lastlog_fields_fixture(load_lastlog):
 def test_lastlog_asdict():
     l_task = Lastlog('2000.01.01 00:00:00', '/root', 'Test', '.py', None, True)
     l_dict = l_task._asdict()
-    print('l_dist is: ', l_dict)
+#    print('l_dist is: ', l_dict)
     expected = {'mtime': '2000.01.01 00:00:00',
                 'path': '/root',
                 'name': 'Test',
@@ -87,7 +87,7 @@ def test_lastlog_asdict():
 def test_lastlog_asdict_fixture(load_lastlog):
     l_task = load_lastlog('2000.01.01 00:00:00', '/root', 'Test', '.py', None, True)
     l_dict = l_task._asdict()
-    print('l_dist is: ', l_dict)
+#    print('l_dist is: ', l_dict)
     expected = {'mtime': '2000.01.01 00:00:00',
                 'path': '/root',
                 'name': 'Test',
@@ -103,8 +103,8 @@ def load_yaml_data():
     with open('sample.yml', 'r') as descriptor:
         try:
             load = yaml.safe_load(descriptor)
-            print(load)
-            print(type(load))
+#            print(load)
+#            print(type(load))
         except yaml.YAMLError as e:
             print(e)
     return load
@@ -120,25 +120,27 @@ def get_dict_from_yaml(load_yaml_data):
         queues.update({settings['properties']['name']: {}})
         for qparam, qvalue in load_yaml_data['components'][components_name]['properties'].items():
             queues[settings['properties']['name']].update({qparam: qvalue})
-    print(queues)
+#    print(queues)
     return queues
 
 def test_component_data(get_dict_from_yaml):
     for component in get_dict_from_yaml.keys():
-        print(get_dict_from_yaml[component])
+#        print(get_dict_from_yaml[component])
         assert get_dict_from_yaml[component]['type'] is not None
         assert len(get_dict_from_yaml[component]['type']) > 0
-#        with pytest.raises(KeyError) as execinfo:
-#            get_dict_from_yaml[component]['typr']
-#        assert 'KeyError' in str(execinfo.value)
-
+        with pytest.raises(Exception) as e:
+            get_dict_from_yaml[component]['typr']
+        assert 'KeyError' in str(e)
+#        print(e)
     assert len(get_dict_from_yaml) > 0
 
 
 
-
-
-
-
-
+def test_recursion_depth():
+    with pytest.raises(RuntimeError) as execinfo:
+        def f():
+            f()
+        f()
+#    print(execinfo)
+    assert "maximum recursion" in str(execinfo.value)
 
