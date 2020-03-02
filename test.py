@@ -132,9 +132,23 @@ def test_invalid_interests_request(arguments, load_store):
     request = {"account": "horns&hoofs", "login": "h&f", "method": "clients_interests", "arguments": arguments}
     set_valid_auth(request)
     response, code = get_response(request, {}, {}, load_store)
+#    print(response)
     assert api.INVALID_REQUEST == code
     assert len(response)>0
 
+
+@pytest.mark.parametrize("arguments", [
+        {"client_ids": [4], "date": datetime.datetime.today().strftime("%d.%m.%Y")},
+        {"client_ids": [4], "date": "19.07.2017"},
+        {"client_ids": [4]},
+    ])
+def test_no_data_in_store_interests_request(arguments, context, load_store):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "clients_interests", "arguments": arguments}
+    set_valid_auth(request)
+    with pytest.raises(Exception) as e:
+        response, code = get_response(request, {}, context, load_store)
+    assert 'is not set!' in str(e)
+    assert 'RuntimeError' in str(e)
 
 
 

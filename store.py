@@ -3,6 +3,7 @@
 import redis
 import random
 import json
+import time
 
 class Store:
     def __init__(self, volume):
@@ -26,6 +27,7 @@ class Store:
         print(self.volume)
 
     def get(self, cid):
+        time.sleep(0.1)
         value = self.cache_get(cid)
         if value is None:
             raise RuntimeError("Key %s is not set!" % cid.split(":")[1])
