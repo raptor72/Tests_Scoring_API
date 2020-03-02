@@ -136,7 +136,6 @@ def test_invalid_interests_request(arguments, load_store):
     assert api.INVALID_REQUEST == code
     assert len(response)>0
 
-
 @pytest.mark.parametrize("arguments", [
         {"client_ids": [4], "date": datetime.datetime.today().strftime("%d.%m.%Y")},
         {"client_ids": [4], "date": "19.07.2017"},
@@ -149,6 +148,49 @@ def test_no_data_in_store_interests_request(arguments, context, load_store):
         response, code = get_response(request, {}, context, load_store)
     assert 'is not set!' in str(e)
     assert 'RuntimeError' in str(e)
+
+#@pytest.fixture
+#def load_empty_store():
+#    s = Store({"": ""})
+#    return s
+
+@pytest.fixture
+def none_store():
+    return None
+
+#score_request working when store burn in atmosphere
+@pytest.mark.parametrize("arguments", [{"phone": "79175002040", "email": "stupnikov@otus.ru"},
+                                       {"gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
+                                       {"gender": 0, "birthday": "01.01.2000"},
+                                       {"gender": 2, "birthday": "01.01.2000"},
+                                       {"first_name": "a", "last_name": "b"},
+                                       {"phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000",
+                         "first_name": "a", "last_name": "b"},
+                                       {"phone": 79175002040, "email": "stupnikov@otus.ru"},
+])
+def test_none_store_score_request(arguments, none_store, context):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
+    set_valid_auth(request)
+    response, code = get_response(request, {}, context, none_store)
+    assert api.OK == code
+    score = response.get("score")
+    assert isinstance(score, int) or isinstance(score, float)
+    assert score >= 0
+    assert sorted(context["has"]) == sorted(arguments.keys())
+
+#interests_request not working when store burn
+@pytest.mark.parametrize("arguments", [
+        {"client_ids": [1, 2, 3], "date": datetime.datetime.today().strftime("%d.%m.%Y")},
+        {"client_ids": [1, 2], "date": "19.07.2017"},
+        {"client_ids": [1]},
+    ])
+def test_none_store_interests_request(arguments, context, none_store):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "clients_interests", "arguments": arguments}
+    set_valid_auth(request)
+    with pytest.raises(Exception) as e:
+        response, code = get_response(request, {}, context, none_store)
+    assert 'AttributeError' in str(e)
+    assert 'object has no attribute' in str(e)
 
 
 

@@ -56,3 +56,10 @@ def get_interests(cid):
 
 get_interests("111") # i:111
 
+
+n = None
+
+print(hasattr(r, "readonly"))
+
+
+

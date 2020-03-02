@@ -22,12 +22,14 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
     # try get from cache,
     # fallback to heavy calculation in case of cache miss
 #    print(key_parts)
-#    return key
-    print(key) #
+#    print(key) #
 #    store = Store({"46a15aeae88d2123e8ac038602ee248f": 34}) # oop
-    score = store.cache_get(key) or 0 # oop
-#    score = cache_get(key) or 0 # func
-
+#    print(hasattr(store, "cache_get"))
+#    score = store.cache_get(key) if hasattr(store, "cache_get") and store.cache_get(key) else 0 # oo "cache_get" in dir(store)
+    try:
+        score = store.cache_get(key) or 0 # oop
+    except:
+        score = 0
     if score:
         return score
     if phone:
@@ -39,7 +41,11 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
     if first_name and last_name:
         score += 0.5
     # cache for 60 minutes
-    store.cache_set(key, score, 60 * 60)
+#    store.cache_set(key, score, 60 * 60)
+    try:
+       store.cache_set(key, score, 60 * 60)
+    except:
+       pass
 #    cache_set(key, score, 60 * 60)
     return score
 
