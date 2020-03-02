@@ -22,7 +22,7 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
     # try get from cache,
     # fallback to heavy calculation in case of cache miss
 #    print(key_parts)
-#    print(key) #
+    print(key) #
 #    store = Store({"46a15aeae88d2123e8ac038602ee248f": 34}) # oop
 #    print(hasattr(store, "cache_get"))
 #    score = store.cache_get(key) if hasattr(store, "cache_get") and store.cache_get(key) else 0 # oo "cache_get" in dir(store)

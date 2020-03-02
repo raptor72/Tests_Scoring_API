@@ -8,7 +8,9 @@ import datetime
 @pytest.fixture
 def load_store():
     s = Store({"46a15aeae88d2123e8ac038602ee248f": 34, "1": 1, "2": "pets", "3": "heavy metall"})
+#    s = Store({"": ""})
     return s
+
 
 @pytest.fixture
 def context():
@@ -192,5 +194,31 @@ def test_none_store_interests_request(arguments, context, none_store):
     assert 'AttributeError' in str(e)
     assert 'object has no attribute' in str(e)
 
+
+@pytest.fixture
+def load_warm_store():
+    s = Store({'d41d8cd98f00b204e9800998ecf8427e': 3.0, 'efd4d906526f3a338d9eab83ea4c77e6': 2.0, 'a1301e1514843ca1973b941a88a58092': 0,
+               'a1301e1514843ca1973b941a88a58092': 1.5, '187ef4436122d1cc2f40dc2b92f0eba0': 0.5, 'efd4d906526f3a338d9eab83ea4c77e6': 5.0,
+               'd41d8cd98f00b204e9800998ecf8427e': 3.0})
+    return s
+
+@pytest.mark.parametrize("arguments", [{"phone": "79175002040", "email": "stupnikov@otus.ru"},
+                                       {"gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
+                                       {"gender": 0, "birthday": "01.01.2000"},
+                                       {"gender": 2, "birthday": "01.01.2000"},
+                                       {"first_name": "a", "last_name": "b"},
+                                       {"phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000",
+                         "first_name": "a", "last_name": "b"},
+                                       {"phone": 79175002040, "email": "stupnikov@otus.ru"},
+])
+def test_warm_store_ok_score_request(arguments, load_warm_store, context):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
+    set_valid_auth(request)
+    response, code = get_response(request, {}, context, load_warm_store)
+    assert api.OK == code
+    score = response.get("score")
+    assert isinstance(score, int) or isinstance(score, float)
+    assert score >= 0
+    assert sorted(context["has"]) == sorted(arguments.keys())
 
 
