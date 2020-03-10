@@ -363,4 +363,36 @@ def test_required_pairs_field(arguments, load_warm_store, context):
     assert 'At least one of the pairs should be defined: first/last name, email/phone, birthday/gender' in response
 
 
+@pytest.mark.parametrize("full_dict", [{"account": "horns&hoofs", "login": "h&f", "arguments": {"phone": 79175002040, "gender": 1, "first_name": "a"}},
+                                       {"account": "horns&hoofs", "method": "online_score", "arguments": {"phone": 79175002040, "gender": 1, "first_name": "a"}},
+                                       {"account": "horns&hoofs", "login": "h&f", "method": "online_score"},
+])
+def test_required_field_types(full_dict, load_warm_store, context):
+    request = full_dict
+    set_valid_auth(request)
+    response, code = get_response(request, {}, context, load_warm_store)
+    assert code == 422
+    assert 'Required field' in response
+    assert 'is not defined!' in response
+
+
+@pytest.mark.parametrize("arguments", [[3.0, {"phone": 79175002040, "email": "ivanov@mail.com"}],
+                                       [2.0, {"gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"}],
+                                       [1.5, {"gender": 0, "birthday": "01.01.2000"}],
+                                       [1.5, {"gender": 2, "birthday": "01.01.2000"}],
+                                       [0.5, {"first_name": "a", "last_name": "b"}],
+                                       [2.0, {"phone": 79175002040, "email": "ivanov@mail.com", "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"}],
+                                       [3.0, {"phone": 79175002040, "email": "ivanov@mail.com"}],
+])
+def test_scoring_request(arguments, load_store, context):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments[1]}
+    set_valid_auth(request)
+    response, code = get_response(request, {}, context, load_store)
+    assert api.OK == code
+    score = response.get("score")
+    assert score >= 0
+    assert arguments[0] == score
+
+
+
 
