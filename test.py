@@ -227,22 +227,72 @@ def test_ok_interests_request(arguments, context, load_warm_store):
 
 
 
-@pytest.mark.parametrize("arguments", [{"phone": "79175002040", "email": 1234, "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
-                                       {"phone": "79175002040", "email": ["stupnikov@otus.ru"], "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
-#                                       {"phone": "79175002040", "email": ("stupnikov@otus.ru"), "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
-                                       {"phone": "79175002040", "email": {"stupnikov": "otus.ru"}, "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
-                                       {"phone": "79175002040", "email": 1.0, "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
-                                       {"phone": "79175002040", "email": None, "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
+@pytest.mark.parametrize("arguments", [{"email": 1, "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"email": ["stupnikov@otus.ru"], "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"email": "stupnikovotus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"email": {"stupnikov": "otus.ru"}, "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"email": 1.0, "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"email": None, "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"email": ("stupnikov", "@otus.ru"), "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
 ])
 def test_email_field(arguments, load_warm_store, context):
     request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
     set_valid_auth(request)
-#    with pytest.raises(Exception) as e:
-
     response, code = get_response(request, {}, context, load_warm_store)
     assert code == 422
     assert 'Field email (type EmailField) invalid' in response
-#    assert 'ValueError' in str(e)
-#    assert 'This field must be a string' in str(e)
+
+
+@pytest.mark.parametrize("arguments", [{"phone": "7917500204", "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"phone": "89175002040", "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"phone": "+79175002040", "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"phone": "791750020400", "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+])
+def test_phone_number_field(arguments, load_warm_store, context):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
+    set_valid_auth(request)
+    response, code = get_response(request, {}, context, load_warm_store)
+    assert code == 422
+    assert 'Field phone (type PhoneField) invalid: Phone number should be 7**********' in response
+
+
+@pytest.mark.parametrize("arguments", [{"phone": 79175002040.0, "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"phone": [79175002040], "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"phone": 0+79175002040j, "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"phone": {"number": "79175002040"}, "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+                                       {"phone": None, "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
+])
+def test_phone_type_field(arguments, load_warm_store, context):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
+    set_valid_auth(request)
+    response, code = get_response(request, {}, context, load_warm_store)
+    assert code == 422
+    assert 'Field phone (type PhoneField) invalid: Phone number must be number or string' in response
+
+
+
+@pytest.mark.parametrize("arguments", [{"birthday": "01-01-2000", "phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "first_name": "a"},
+                                       {"birthday": "2000.01.01", "phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "first_name": "a"},
+                                       {"birthday": "01012000", "phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "first_name": "a"},
+                                       {"birthday": "01.13.2000", "phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "first_name": "a"},
+                                       {"birthday": "31.02.2000", "phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "first_name": "a"},
+])
+def test_birthday_type_field(arguments, load_warm_store, context):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
+    set_valid_auth(request)
+    response, code = get_response(request, {}, context, load_warm_store)
+    assert code == 422
+    assert 'Field birthday (type BirthDayField) invalid: Incorect date format, should be DD.MM.YYYY' in response
+
+
+@pytest.mark.parametrize("arguments", [{"birthday": "01.01.1900", "phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "first_name": "a"},
+])
+def test_too_old_birthday_type_field(arguments, load_warm_store, context):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
+    set_valid_auth(request)
+    response, code = get_response(request, {}, context, load_warm_store)
+    assert code == 422
+    assert 'Field birthday (type BirthDayField) invalid: Incorrect birth day' in response
+
 
 
