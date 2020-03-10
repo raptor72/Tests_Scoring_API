@@ -253,8 +253,8 @@ class MainHTTPHandler(BaseHTTPRequestHandler):
     }
 
 #    store = None
-    store = Store({"46a15aeae88d2123e8ac038602ee248f": 34, "1": 1, "2": "pets"})
-#    store = Store({})
+#    store = Store({"46a15aeae88d2123e8ac038602ee248f": 34, "1": 1, "2": "pets"})
+    store = Store()
 
     def get_request_id(self, headers):
         return headers.get('HTTP_X_REQUEST_ID', uuid.uuid4().hex)

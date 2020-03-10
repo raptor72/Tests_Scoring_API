@@ -44,6 +44,7 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
 #    store.cache_set(key, score, 60 * 60)
     try:
        store.cache_set(key, score, 60 * 60)
+#       store.cache_set(key, score, 5)
     except:
        pass
 #    cache_set(key, score, 60 * 60)
@@ -52,10 +53,10 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
 
 def get_interests(store, cid):
 #    print(cid) # "client_ids": [1, 2] 1, 2, ...
-    r = store.get("i:%s" % cid)
-#    r = store.get("%s" % cid)
+#    r = store.get("i:%s" % cid)
+    r = store.get(cid)
     print(r) #1, pets
-    print(type(r)) # int, str
+#    print(type(r)) # int, str
 #    return json.loads(r) if r else []
     return r
 #    return r if r else []

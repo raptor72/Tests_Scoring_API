@@ -7,8 +7,9 @@ import datetime
 
 @pytest.fixture
 def load_store():
-    s = Store({"46a15aeae88d2123e8ac038602ee248f": 34, "1": 1, "2": "pets", "3": "heavy metall"})
+#    s = Store({"46a15aeae88d2123e8ac038602ee248f": 34, "1": 1, "2": "pets", "3": "heavy metall"})
 #    s = Store({"": ""})
+    s = Store()
     return s
 
 
@@ -107,22 +108,6 @@ def test_ok_score_admin_request(load_store):
     assert score == 42
 
 @pytest.mark.parametrize("arguments", [
-        {"client_ids": [1, 2, 3], "date": datetime.datetime.today().strftime("%d.%m.%Y")},
-        {"client_ids": [1, 2], "date": "19.07.2017"},
-        {"client_ids": [1]},
-    ])
-def test_ok_interests_request(arguments, context, load_store):
-    request = {"account": "horns&hoofs", "login": "h&f", "method": "clients_interests", "arguments": arguments}
-    set_valid_auth(request)
-    response, code = get_response(request, {}, context, load_store)
-    assert api.OK == code
-    assert len(arguments["client_ids"]) == len(response)
-    assert (isinstance(i, list) for i in response.values())
-    assert ((isinstance(v, basestring) for i in v) for v in response.values())
-#    print("response.values(): ", response.values()) #('response.values(): ', [1, 'pets', 'heavy metall'])
-    assert context.get("nclients") == len(arguments["client_ids"])
-
-@pytest.mark.parametrize("arguments", [
         {},
         {"date": "20.07.2017"},
         {"client_ids": [], "date": "20.07.2017"},
@@ -197,10 +182,12 @@ def test_none_store_interests_request(arguments, context, none_store):
 
 @pytest.fixture
 def load_warm_store():
-    s = Store({'d41d8cd98f00b204e9800998ecf8427e': 3.0, 'efd4d906526f3a338d9eab83ea4c77e6': 2.0, 'a1301e1514843ca1973b941a88a58092': 0,
-               'a1301e1514843ca1973b941a88a58092': 1.5, '187ef4436122d1cc2f40dc2b92f0eba0': 0.5, 'efd4d906526f3a338d9eab83ea4c77e6': 5.0,
-               'd41d8cd98f00b204e9800998ecf8427e': 3.0})
+    s = Store()
+    ttl = 20
+    for k, v in ('d41d8cd98f00b204e9800998ecf8427e', 3.0), ('efd4d906526f3a338d9eab83ea4c77e6', 2.0), ('a1301e1514843ca1973b941a88a58092', 0), ('a1301e1514843ca1973b941a88a58092', 1.5), ('187ef4436122d1cc2f40dc2b92f0eba0', 0.5), ('efd4d906526f3a338d9eab83ea4c77e6', 5.0), ('d41d8cd98f00b204e9800998ecf8427e', 3.0), ("1", 1), ("2", "pets"), ("3", "heavy metall"):
+        s.cache_set(k, v, ttl)
     return s
+
 
 @pytest.mark.parametrize("arguments", [{"phone": "79175002040", "email": "stupnikov@otus.ru"},
                                        {"gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
@@ -221,4 +208,20 @@ def test_warm_store_ok_score_request(arguments, load_warm_store, context):
     assert score >= 0
     assert sorted(context["has"]) == sorted(arguments.keys())
 
+
+@pytest.mark.parametrize("arguments", [
+        {"client_ids": [1, 2, 3], "date": datetime.datetime.today().strftime("%d.%m.%Y")},
+        {"client_ids": [1, 2], "date": "19.07.2017"},
+        {"client_ids": [1]},
+    ])
+def test_ok_interests_request(arguments, context, load_warm_store):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "clients_interests", "arguments": arguments}
+    set_valid_auth(request)
+    response, code = get_response(request, {}, context, load_warm_store)
+    assert api.OK == code
+    assert len(arguments["client_ids"]) == len(response)
+    assert (isinstance(i, list) for i in response.values())
+    assert ((isinstance(v, basestring) for i in v) for v in response.values())
+#    print("response.values(): ", response.values()) #('response.values(): ', [1, 'pets', 'heavy metall'])
+    assert context.get("nclients") == len(arguments["client_ids"])
 
