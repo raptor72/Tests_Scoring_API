@@ -244,6 +244,15 @@ def test_email_field(arguments, load_warm_store, context):
     assert 'Field email (type EmailField) invalid' in response
 
 
+@pytest.mark.parametrize("arguments", ["stupnikovotus.ru", "stupnikov", "otus.ru"])
+def test_api_email_field(arguments, load_warm_store, context):
+    field = api.EmailField()
+    with pytest.raises(Exception) as e:
+        val = field.validate(arguments)
+    assert 'Invalid email address' == str(e.value)
+    assert 'ValueError' in str(e)
+
+
 @pytest.mark.parametrize("arguments", [{"phone": "7917500204", "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
                                        {"phone": "89175002040", "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
                                        {"phone": "+79175002040", "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
@@ -255,6 +264,16 @@ def test_phone_number_field(arguments, load_warm_store, context):
     response, code = get_response(request, {}, context, load_warm_store)
     assert code == 422
     assert 'Field phone (type PhoneField) invalid: Phone number should be 7**********' in response
+
+
+@pytest.mark.parametrize("arguments", ["7917500204", "89175002040", "+79175002040", "791750020400"])
+def test_api_phone_number_field(arguments, load_warm_store, context):
+    field = api.PhoneField()
+    with pytest.raises(Exception) as e:
+        val = field.validate(arguments)
+    assert 'Phone number should be 7**********' == str(e.value)
+    assert 'ValueError' in str(e)
+
 
 
 @pytest.mark.parametrize("arguments", [{"phone": 79175002040.0, "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "first_name": "a"},
@@ -271,6 +290,14 @@ def test_phone_type_field(arguments, load_warm_store, context):
     assert 'Field phone (type PhoneField) invalid: Phone number must be number or string' in response
 
 
+@pytest.mark.parametrize("arguments", [79175002040.0, [79175002040], 0+79175002040j, {"number": "79175002040"}, None])
+def test_api_phone_type_field(arguments, load_warm_store, context):
+    field = api.PhoneField()
+    with pytest.raises(Exception) as e:
+        val = field.validate(arguments)
+    assert 'Phone number must be number or string' == str(e.value)
+    assert 'ValueError' in str(e)
+
 
 @pytest.mark.parametrize("arguments", [{"birthday": "01-01-2000", "phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "first_name": "a"},
                                        {"birthday": "2000.01.01", "phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "first_name": "a"},
@@ -286,6 +313,15 @@ def test_birthday_type_field(arguments, load_warm_store, context):
     assert 'Field birthday (type BirthDayField) invalid: Incorect date format, should be DD.MM.YYYY' in response
 
 
+@pytest.mark.parametrize("arguments", ["01-01-2000", "2000.01.01", "01012000", "01.13.2000", "31.02.2000"])
+def test_api_birthday_type_field(arguments, load_warm_store, context):
+    field = api.BirthDayField()
+    with pytest.raises(Exception) as e:
+        val = field.validate(arguments)
+    assert 'Incorect date format, should be DD.MM.YYYY' == str(e.value)
+    assert 'ValueError' in str(e)
+
+
 @pytest.mark.parametrize("arguments", [{"birthday": "01.01.1900", "phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "first_name": "a"},
 ])
 def test_too_old_birthday_type_field(arguments, load_warm_store, context):
@@ -296,16 +332,34 @@ def test_too_old_birthday_type_field(arguments, load_warm_store, context):
     assert 'Field birthday (type BirthDayField) invalid: Incorrect birth day' in response
 
 
+@pytest.mark.parametrize("arguments", ["01.01.1900", "31.12.1899"])
+def test_api_too_old_birthday_type_field(arguments, load_warm_store, context):
+    field = api.BirthDayField()
+    with pytest.raises(Exception) as e:
+        val = field.validate(arguments)
+    assert 'Incorrect birth day' == str(e.value)
+    assert 'ValueError' in str(e)
+
+
 @pytest.mark.parametrize("arguments", [{"gender": -1, "phone": 79175002040, "email": "stupnikov@otus.ru", "birthday": "01.01.2000", "first_name": "a"},
                                        {"gender": 3, "phone": 79175002040, "email": "stupnikov@otus.ru", "birthday": "01.01.2000", "first_name": "a"},
                                        {"gender": "1", "phone": 79175002040, "email": "stupnikov@otus.ru", "birthday": "01.01.2000", "first_name": "a"},
 ])
-def test_phone_type_field(arguments, load_warm_store, context):
+def test_gender_type_field(arguments, load_warm_store, context):
     request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
     set_valid_auth(request)
     response, code = get_response(request, {}, context, load_warm_store)
     assert code == 422
     assert 'Field gender (type GenderField) invalid: Gender must be equal to 0, 1 or 2' in response
+
+
+@pytest.mark.parametrize("arguments", [-1, 3, "1"])
+def test_api_gender_type_field(arguments, load_warm_store, context):
+    field = api.GenderField()
+    with pytest.raises(Exception) as e:
+        val = field.validate(arguments)
+    assert 'Gender must be equal to 0, 1 or 2' == str(e.value)
+    assert 'ValueError' in str(e)
 
 
 @pytest.mark.parametrize("arguments", [
@@ -320,9 +374,17 @@ def test_clients_ids_field(arguments, context, load_warm_store):
     assert 'Client IDs should be list or positive integers' in response
 
 
+@pytest.mark.parametrize("arguments", [["2"], [-1]])
+def test_api_clients_id_field(arguments, load_warm_store, context):
+    field = api.ClientIDsField()
+    with pytest.raises(Exception) as e:
+        val = field.validate(arguments)
+    assert 'Client IDs should be list or positive integers' in str(e)
+
+
 @pytest.mark.parametrize("arguments", [[],
                                        1,
-                                       "phone",
+                                       "string",
 ])
 def test_arguments_field(arguments, load_warm_store, context):
     request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
@@ -332,6 +394,12 @@ def test_arguments_field(arguments, load_warm_store, context):
     assert 'Field arguments (type ArgumentsField) invalid: This field must be a dict' in response
 
 
+@pytest.mark.parametrize("arguments", [[], 1, 1.0, "string"])
+def test_api_arguments_field(arguments, load_warm_store, context):
+    field = api.ArgumentsField()
+    with pytest.raises(Exception) as e:
+        val = field.validate(arguments)
+    assert 'This field must be a dict' in str(e)
 
 
 @pytest.mark.parametrize("arguments", [{"first_name": ["a"], "phone": "79175002040", "email": "stupnikov@otus.ru", "gender": 1, "birthday": "01.01.2000", "last_name": "b"},
@@ -345,6 +413,14 @@ def test_char_field(arguments, load_warm_store, context):
     response, code = get_response(request, {}, context, load_warm_store)
     assert code == 422
     assert '(type CharField) invalid: This field must be a string' in response
+
+
+@pytest.mark.parametrize("arguments", [["a"], 1, 1.0, {"k":"v"}])
+def test_api_char_field(arguments, load_warm_store, context):
+    field = api.CharField()
+    with pytest.raises(Exception) as e:
+        val = field.validate(arguments)
+    assert 'This field must be a string' in str(e)
 
 
 @pytest.mark.parametrize("arguments", [{"phone": 79175002040, "gender": 1, "first_name": "a"},
