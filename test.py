@@ -225,3 +225,24 @@ def test_ok_interests_request(arguments, context, load_warm_store):
 #    print("response.values(): ", response.values()) #('response.values(): ', [1, 'pets', 'heavy metall'])
     assert context.get("nclients") == len(arguments["client_ids"])
 
+
+
+@pytest.mark.parametrize("arguments", [{"phone": "79175002040", "email": 1234, "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
+                                       {"phone": "79175002040", "email": ["stupnikov@otus.ru"], "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
+#                                       {"phone": "79175002040", "email": ("stupnikov@otus.ru"), "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
+                                       {"phone": "79175002040", "email": {"stupnikov": "otus.ru"}, "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
+                                       {"phone": "79175002040", "email": 1.0, "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
+                                       {"phone": "79175002040", "email": None, "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"},
+])
+def test_email_field(arguments, load_warm_store, context):
+    request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
+    set_valid_auth(request)
+#    with pytest.raises(Exception) as e:
+
+    response, code = get_response(request, {}, context, load_warm_store)
+    assert code == 422
+    assert 'Field email (type EmailField) invalid' in response
+#    assert 'ValueError' in str(e)
+#    assert 'This field must be a string' in str(e)
+
+
