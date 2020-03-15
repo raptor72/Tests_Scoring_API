@@ -251,9 +251,6 @@ class MainHTTPHandler(BaseHTTPRequestHandler):
     router = {
         "method": method_handler
     }
-
-#    store = None
-#    store = Store({"46a15aeae88d2123e8ac038602ee248f": 34, "1": 1, "2": "pets"})
     store = Store()
 
     def get_request_id(self, headers):
@@ -290,7 +287,6 @@ class MainHTTPHandler(BaseHTTPRequestHandler):
         else:
             r = {"error": response or ERRORS.get(code, "Unknown Error"), "code": code}
         context.update(r)
-#        print("context", context) #('context', {'code': 200, 'has': [u'phone', u'first_name', u'birthday', u'email'], 'response': {'score': 3.0}, 'request_id': '46470c56c2f74528816888b5a7cd293c'})
         logging.info(context)
         self.wfile.write(json.dumps(r))
         return
