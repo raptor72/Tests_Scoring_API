@@ -30,15 +30,28 @@ def retry(max_tries, error='TimeoutError'):
     return decorator
 
 
+def load_redis(host='localhost', port=6379, db=0, socket_timeout=5):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            _r = redis.Redis(host=host, port=port, db=db, socket_timeout=socket_timeout)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
 class Store(object):
     # _r = None
 
     def __init__(self):
         # if not self._r:
-        self._r = redis.Redis()
+        self._r = redis.Redis(host='localhost', port=6379, db=0, socket_timeout=5)
 
+
+
+    @load_redis
     @retry(1)
-    def cache_get(self, key, attempts=1):
+    def cache_get(self, key):
         # while attempts > 0:
         #     try:
         val =  self._r.get(key)
