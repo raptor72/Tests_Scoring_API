@@ -30,61 +30,33 @@ def retry(max_tries, error='TimeoutError'):
     return decorator
 
 
-def load_redis(host='localhost', port=6379, db=0, socket_timeout=5):
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            _r = redis.Redis(host=host, port=port, db=db, socket_timeout=socket_timeout)
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
-
-
 class Store(object):
     # _r = None
+    def __init__(self, host='localhost', port='6379', db=0, socket_timeout=5):
+        self.host = str(host)
+        self.port = int(port)
+        self.db = int(db)
+        self.socket_timeout = int(socket_timeout)
+        self._r = redis.Redis(host=self.host, port=self.port, db=self.db, socket_timeout=self.socket_timeout)
 
-    def __init__(self):
-        # if not self._r:
-        self._r = redis.Redis(host='localhost', port=6379, db=0, socket_timeout=5)
 
-
-
-    @load_redis
     @retry(1)
     def cache_get(self, key):
-        # while attempts > 0:
-        #     try:
         val =  self._r.get(key)
         logging.info("key %s get from cache" % key)
         logging.info(self._r.keys())
         return json.loads(val) if val else None
-            # except TimeoutError:
-        #         attempts -= 1
-        #         continue
-        # return None
 
     @retry(4)
     def cache_set(self, key, value, ttl):
-        # while attempts > 0:
-        #     try:
         value = json.dumps(value)
         logging.info("key %s stored in cache" % key)
         self._r.set(key, value, ttl)
         return
-        #     except TimeoutError:
-        #         attempts -= 1
-        #         continue
-        # return None
 
     @retry(4)
     def get(self, key):
-        # value = None
-        # while attempts > 0:
-        #     try:
         value = self.cache_get(key)
-            # except TimeoutError:
-            #     attempts -= 1
-            #     continue
         if value is None:
             raise RuntimeError("Key %s is not set!" % key)
         return value
