@@ -42,10 +42,11 @@ class Store(object):
 
     @retry(1)
     def cache_get(self, key):
-        val =  self._r.get(key)
+        val = self._r.get(key)
         logging.info("key %s get from cache" % key)
         logging.info(self._r.keys())
         return json.loads(val) if val else None
+
 
     @retry(4)
     def cache_set(self, key, value, ttl):

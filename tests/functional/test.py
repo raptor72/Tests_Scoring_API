@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import pytest
 import hashlib
 import datetime
@@ -412,3 +413,13 @@ def test_invalid_required_field_types_request(full_dict, load_warm_store, contex
     assert code == 422
     assert 'Required field' in response
     assert 'is not defined!' in response
+
+
+def test_set_key(load_store):
+    load_store.cache_set('key1', 'value1', 1)
+    assert load_store.get('key1')
+
+def test_cleanup_cache(load_store):
+    load_store.cache_set('key3', 'value3', 1)
+    time.sleep(2)
+    assert load_store.cache_get('key3') is None
