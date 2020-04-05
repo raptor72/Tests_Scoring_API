@@ -272,11 +272,11 @@ def test_ok_interests_request(arguments, context, load_warm_store):
 @pytest.mark.parametrize(
     "arguments",
     [[3.0, {"phone": 79175002040, "email": "ivanov@mail.com"}],
-    [5.0, {"gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"}],
+    [2.0, {"gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"}],
     [1.5, {"gender": 0, "birthday": "01.01.2000"}],
     [1.5, {"gender": 2, "birthday": "01.01.2000"}],
     [0.5, {"first_name": "a", "last_name": "b"}],
-    [5.0, {"phone": 79175002040, "email": "ivanov@mail.com", "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"}],
+    [2.0, {"phone": 79175002040, "email": "ivanov@mail.com", "gender": 1, "birthday": "01.01.2000", "first_name": "a", "last_name": "b"}],
     [3.0, {"phone": 79175002040, "email": "ivanov@mail.com"}]]
 )
 def test_scoring_request(arguments, load_store, context):
