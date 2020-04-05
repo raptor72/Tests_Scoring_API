@@ -4,53 +4,60 @@ import redis
 import random
 import json
 import time
+import logging
+import redis
+import json
+import functools
 
-class Store:
-    def __init__(self, volume):
-        self.volume = volume
-        self.r = redis.Redis()
-        self.r.hmset("volume", volume)
+logging.basicConfig(format=u'[%(asctime)s] %(levelname).1s %(message)s',
+                    datefmt='%Y.%m.%d %H:%M:%S',
+                    level=logging.INFO
+                    )
 
+
+def retry(max_tries):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for n in range(1, max_tries + 1):
+                try:
+                    return func(*args, **kwargs)
+                except (redis.exceptions.ConnectionError, redis.exceptions.TimeoutError):
+                    logging.info('connection lost %s times' % n)
+                    if n == max_tries:
+                        raise
+        return wrapper
+    return decorator
+
+
+class Store(object):
+    def __init__(self, host='localhost', port='6379', db=0, socket_timeout=5):
+        self.host = str(host)
+        self.port = int(port)
+        self.db = int(db)
+        self.socket_timeout = int(socket_timeout)
+        self._r = redis.Redis(host=self.host, port=self.port, db=self.db, socket_timeout=self.socket_timeout)
+
+
+    @retry(1)
     def cache_get(self, key):
-        volume = self.r.hgetall("volume")
-        hash = key.split(":")[1]
-        try:
-            if self.volume[hash]:
-                print("get from cashe")
-                return self.volume[hash]
-        except KeyError:
-            return None
+        val = self._r.get(key)
+        logging.info("key %s get from cache" % key)
+        logging.info(self._r.keys())
+        return json.loads(val) if val else None
 
-    def cache_set(self, key, score, seconds):
-        self.volume.update({key.split(":")[1]:score})
-        print("Key %s stored in cache" % key.split(":")[1])
-        print(self.volume)
 
-    def get(self, cid):
-        time.sleep(0.1)
-        value = self.cache_get(cid)
+    @retry(4)
+    def cache_set(self, key, value, ttl):
+        value = json.dumps(value)
+        logging.info("key %s stored in cache" % key)
+        self._r.set(key, value, ttl)
+        return
+
+    @retry(4)
+    def get(self, key):
+        value = self.cache_get(key)
         if value is None:
-            raise RuntimeError("Key %s is not set!" % cid.split(":")[1])
+            raise RuntimeError("Key %s is not set!" % key)
         return value
 
-
-def get_interests(store, cid):
-    interests = ["cars", "pets", "travel", "hi-tech", "sport", "music", "books", "tv", "cinema", "geek", "otus"]
-    return str({cid: random.sample(interests, 2)})
-
-def get_interests2(store, cid):
-    r = """
-    {
-    "REPORT_SIZE": 25
-    }
-    """
-    r = "{'key0': {'key1': 40}}"
-    r = """{
-    "1":{"1":1}
-    }"""
-#    r = store.get("i:%s" % cid)
-    r = '{"i":["cars", "music"]}'
-    return json.loads(r) if r else []
-
-
-#print(get_interests2("", "")) # {'i': ['cars', 'music']}
