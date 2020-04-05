@@ -15,15 +15,15 @@ logging.basicConfig(format=u'[%(asctime)s] %(levelname).1s %(message)s',
                     )
 
 
-def retry(max_tries, error='TimeoutError'):
+def retry(max_tries):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             for n in range(1, max_tries + 1):
                 try:
                     return func(*args, **kwargs)
-                except error:
-                    print(n)
+                except (redis.exceptions.ConnectionError, redis.exceptions.TimeoutError):
+                    logging.info('connection lost %s times' % n)
                     if n == max_tries:
                         raise
         return wrapper
@@ -31,7 +31,6 @@ def retry(max_tries, error='TimeoutError'):
 
 
 class Store(object):
-    # _r = None
     def __init__(self, host='localhost', port='6379', db=0, socket_timeout=5):
         self.host = str(host)
         self.port = int(port)
