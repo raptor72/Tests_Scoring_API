@@ -40,6 +40,27 @@ def load_warm_store():
     return s
 
 
+@pytest.fixture
+def storage_redis_offline_mock(monkeypatch):
+    def mock_get_and_set_to_redis(*args, **kwargs):
+        raise redis.exceptions.ConnectionError
+    monkeypatch.setattr(redis.Redis, 'get', mock_get_and_set_to_redis)
+
+
+@pytest.fixture
+def mock_set_with_success_reconnect(monkeypatch):
+    ones_raise_completed = False
+    global ones_raise_completed
+    def mock_set_to_redis(*args, **kwargs):
+        global ones_raise_completed
+        if ones_raise_completed:
+            monkeypatch.undo()
+            return redis.Redis.set(*args, **kwargs)
+        ones_raise_completed = True
+        raise redis.exceptions.ConnectionError
+    monkeypatch.setattr(redis.Redis, 'set', mock_set_to_redis)
+
+
 def get_response(request, headers, context, store):
     return api.method_handler({"body": request, "headers": headers}, context, store)
 
@@ -421,18 +442,11 @@ def test_set_key(load_store):
     load_store.cache_set('key1', 'value1', 1)
     assert load_store.get('key1')
 
+
 def test_cleanup_cache(load_store):
     load_store.cache_set('key3', 'value3', 1)
     time.sleep(2)
     assert load_store.cache_get('key3') is None
-
-
-@pytest.fixture
-def storage_redis_offline_mock(monkeypatch):
-    def mock_get_and_set_to_redis(*args, **kwargs):
-        raise redis.exceptions.ConnectionError
-    monkeypatch.setattr(redis.Redis, 'get', mock_get_and_set_to_redis)
-#    monkeypatch.setattr(redis.Redis, 'set', mock_get_and_set_to_redis)
 
 
 def test_get_command_reconnect_if_connection_lost(load_store, storage_redis_offline_mock):
@@ -452,19 +466,6 @@ def test_get_score_if_redis_offline(load_store, storage_redis_offline_mock):
 def test_get_interests_if_redis_offline(load_store, storage_redis_offline_mock):
     with pytest.raises(redis.exceptions.ConnectionError):
         get_interests(load_store, 1)
-
-@pytest.fixture
-def mock_set_with_success_reconnect(monkeypatch):
-    ones_raise_completed = False
-    global ones_raise_completed
-    def mock_set_to_redis(*args, **kwargs):
-        global ones_raise_completed
-        if ones_raise_completed:
-            monkeypatch.undo()
-            return redis.Redis.set(*args, **kwargs)
-        ones_raise_completed = True
-        raise redis.exceptions.ConnectionError
-    monkeypatch.setattr(redis.Redis, 'set', mock_set_to_redis)
 
 
 def test_cached_get_reconnect_if_reconnection_success(load_store, mock_set_with_success_reconnect, caplog):
